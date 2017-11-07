@@ -1,4 +1,4 @@
-package com.juliatimofeeva.currencyconverter.data.storage;
+package com.juliatimofeeva.currencyconverter.data.storage.sqlite;
 
 import android.provider.BaseColumns;
 

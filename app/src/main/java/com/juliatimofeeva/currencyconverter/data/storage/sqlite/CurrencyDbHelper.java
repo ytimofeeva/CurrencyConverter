@@ -1,4 +1,4 @@
-package com.juliatimofeeva.currencyconverter.data.storage;
+package com.juliatimofeeva.currencyconverter.data.storage.sqlite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

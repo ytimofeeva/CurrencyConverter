@@ -6,15 +6,17 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.juliatimofeeva.currencyconverter.CurrencyApplication;
+import com.juliatimofeeva.currencyconverter.data.converter.CurrencyConverter;
 import com.juliatimofeeva.currencyconverter.data.network.NetworkRequestProcessor;
 import com.juliatimofeeva.currencyconverter.data.network.exceptions.ResponseParseException;
+import com.juliatimofeeva.currencyconverter.data.storage.CurrencyDatabase;
 import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -29,10 +31,14 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     private static final String TAG = CurrencyDataRepositoryImpl.class.getSimpleName();
     private Set<OnRequestCompletionListener> listenerSet;
     private ExecutorService executor;
+    private CurrencyDatabase database;
+    private CurrencyConverter converter;
 
-    public CurrencyDataRepositoryImpl() {
+    public CurrencyDataRepositoryImpl(CurrencyDatabase database, CurrencyConverter converter) {
         this.executor = Executors.newSingleThreadExecutor();
         listenerSet = Collections.newSetFromMap(new ConcurrentHashMap<OnRequestCompletionListener, Boolean>());
+        this.database = database;
+        this.converter = converter;
     }
 
     public void setListener(OnRequestCompletionListener listener) {
@@ -124,8 +130,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         public void run() {
             List<CurrencyInfoModel> data = null;
             try {
-                data = CurrencyApplication.getFactoryProvider().getDataLayerFactory()
-                        .getCurrencyDatabase().getAllCurrencyItems();
+                data = database.getAllCurrencyItems();
             } catch (SQLiteException exception) {
                 Log.e(TAG, "Can't read from database");
             }
@@ -165,8 +170,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         @Override
         public void run() {
             try {
-                CurrencyApplication.getFactoryProvider().getDataLayerFactory()
-                        .getCurrencyDatabase().insertCurrencyItems(dataForSave);
+                database.insertCurrencyItems(dataForSave);
             } catch (SQLiteException exception) {
                 Log.e(TAG, "Can't write to database");
             }
@@ -182,18 +186,27 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
         @Override
         public void run() {
-            //TODO: two requests to db
+            double result = 0;
             try {
-                Thread.sleep(3000);
-            } catch (Exception exception) {
-
+                result = converter.convert(request.getCurrencyCodeFrom(), request.getCurrencyCodeTo(), request.getRequestValue());
+            } catch (SQLiteException|NoSuchElementException exception) {
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(OnRequestCompletionListener listener : listenerSet) {
+                            listener.onCacheRequestError(new Throwable("Try again later"));
+                        }
+                    }
+                });
             }
+            final double finalResult = result;
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     for(OnRequestCompletionListener listener : listenerSet) {
-                        listener.onConvertProcessCompleteSuccess(35.17);
+                        listener.onConvertProcessCompleteSuccess(finalResult);
                     }
                 }
             });

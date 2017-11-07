@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.juliatimofeeva.currencyconverter.data.CurrencyInfoModel;
 import com.juliatimofeeva.currencyconverter.data.storage.entities.CurrencyModelDB;
+import com.juliatimofeeva.currencyconverter.data.storage.sqlite.CurrencyDbHelper;
+import com.juliatimofeeva.currencyconverter.data.storage.sqlite.CurrencyValueContract;
 
 import java.util.ArrayList;
 import java.util.List;
