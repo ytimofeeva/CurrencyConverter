@@ -1,13 +1,22 @@
 package com.juliatimofeeva.currencyconverter.data;
 
+import android.database.sqlite.SQLiteException;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.juliatimofeeva.currencyconverter.CurrencyApplication;
+import com.juliatimofeeva.currencyconverter.data.network.NetworkRequestProcessor;
+import com.juliatimofeeva.currencyconverter.data.network.exceptions.ResponseParseException;
 import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,20 +26,23 @@ import java.util.concurrent.Executors;
 
 public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
-    private OnRequestCompletionListener listener;
+    private static final String TAG = CurrencyDataRepositoryImpl.class.getSimpleName();
+    private Set<OnRequestCompletionListener> listenerSet;
     private ExecutorService executor;
 
     public CurrencyDataRepositoryImpl() {
         this.executor = Executors.newSingleThreadExecutor();
+        listenerSet = Collections.newSetFromMap(new ConcurrentHashMap<OnRequestCompletionListener, Boolean>());
     }
 
     public void setListener(OnRequestCompletionListener listener) {
-        this.listener = listener;
+        listenerSet.add(listener);
     }
 
-    public void removeListener() {
-        this.listener = null;
+    public void removeListener(OnRequestCompletionListener listener) {
+        listenerSet.remove(listener);
     }
+
 
     @Override
     public void getCurrencyDataFromNetwork() {
@@ -49,38 +61,58 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
     @Override
     public void saveCurrencyDataToCache(List<CurrencyInfoModel> data) {
-        //TODO: stub implementation
+        if ((data != null) && (data.size() > 0)) {
+            executor.submit(new SaveRequestRunnable(data));
+        }
     }
 
     public interface OnRequestCompletionListener {
         void onNetworkRequestSuccess(List<CurrencyInfoModel> data);
+
         void onNetworkRequestError(Throwable error);
+
         void onCacheRequestSuccess(List<CurrencyInfoModel> data);
+
         void onCacheRequestError(Throwable error);
+
         void onConvertProcessCompleteSuccess(double data);
+
         void onConvertProcessCompleteError(Throwable error);
     }
 
     private class NetworkRequestRunnable implements Runnable {
 
+        private static final String REQUEST_URL = "http://www.cbr.ru/scripts/XML_daily.asp";
+
         @Override
         public void run() {
+            URL url = null;
+            List<CurrencyInfoModel> result = null;
             try {
-                Thread.sleep(3000);
-            } catch (Exception exception) {
-
+                url = new URL(REQUEST_URL);
+                result = NetworkRequestProcessor.getValuteListFromNetwork(url);
+            } catch (IOException | ResponseParseException exception) {
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(OnRequestCompletionListener listener : listenerSet) {
+                            listener.onNetworkRequestError(exception);
+                        }
+                    }
+                });
+                return;
             }
-            CurrencyInfoModel info1 = new CurrencyInfoModel("RON", "Румынский лей", 14.95, 1);
-            CurrencyInfoModel info2 = new CurrencyInfoModel("SGD", "Сингапурский доллар", 72.7078, 1);
-            List<CurrencyInfoModel> data = new ArrayList<>();
-            data.add(info1);
-            data.add(info2);
-            final List<CurrencyInfoModel> finalList = data;
+
+            final List<CurrencyInfoModel> finalList = result;
+
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onNetworkRequestSuccess(finalList);
+                    for(OnRequestCompletionListener listener : listenerSet) {
+                        listener.onNetworkRequestSuccess(finalList);
+                    }
                 }
             });
         }
@@ -90,18 +122,54 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
         @Override
         public void run() {
+            List<CurrencyInfoModel> data = null;
             try {
-                Thread.sleep(3000);
-            } catch (Exception exception) {
+                data = CurrencyApplication.getFactoryProvider().getDataLayerFactory()
+                        .getCurrencyDatabase().getAllCurrencyItems();
+            } catch (SQLiteException exception) {
+                Log.e(TAG, "Can't read from database");
+            }
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            if (data == null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(OnRequestCompletionListener listener : listenerSet) {
+                            listener.onCacheRequestError(new Throwable("empty"));
+                        }
+                    }
+                });
+            } else {
+                final List<CurrencyInfoModel> result = data;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(OnRequestCompletionListener listener : listenerSet) {
+                            listener.onCacheRequestSuccess(result);
+                        }
+                    }
+                });
 
             }
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onCacheRequestError(new Throwable("empty"));
-                }
-            });
+        }
+    }
+
+    private class SaveRequestRunnable implements Runnable {
+
+        public List<CurrencyInfoModel> dataForSave;
+
+        public SaveRequestRunnable(@NonNull List<CurrencyInfoModel> data) {
+            this.dataForSave = data;
+        }
+        @Override
+        public void run() {
+            try {
+                CurrencyApplication.getFactoryProvider().getDataLayerFactory()
+                        .getCurrencyDatabase().insertCurrencyItems(dataForSave);
+            } catch (SQLiteException exception) {
+                Log.e(TAG, "Can't write to database");
+            }
         }
     }
 
@@ -124,7 +192,9 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onConvertProcessCompleteSuccess(35.17);
+                    for(OnRequestCompletionListener listener : listenerSet) {
+                        listener.onConvertProcessCompleteSuccess(35.17);
+                    }
                 }
             });
         }

@@ -27,7 +27,11 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     public void attachView(ConverterView view) {
         this.view = view;
-        currencyDataRepository.getCurrencyDataFromNetwork();
+        if (currencyData != null) {
+            view.showCurrencyNames(getSortedNamesFromModelList(currencyData));
+        } else {
+            currencyDataRepository.getCurrencyDataFromCache();
+        }
     }
 
     public void detachView() {
@@ -50,23 +54,23 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     @Override
     public void onNetworkRequestSuccess(List<CurrencyInfoModel> data) {
-        currencyDataRepository.saveCurrencyDataToCache(data);
         currencyData = data;
-        if (view != null) {
-            view.showCurrencyNames(getSortedNamesFromModelList(data));
-        }
     }
 
     @Override
     public void onNetworkRequestError(Throwable error) {
         currencyDataRepository.getCurrencyDataFromCache();
+        if (view != null) {
+            view.showError(error.getLocalizedMessage());
+        }
     }
 
     @Override
     //already sorted list
     public void onCacheRequestSuccess(List<CurrencyInfoModel> data) {
+        currencyData = data;
         if (view != null) {
-            view.showCurrencyNames(getSortedNamesFromModelList(data));
+            view.showCurrencyNames(getSortedNamesFromModelList(currencyData));
         }
     }
 
