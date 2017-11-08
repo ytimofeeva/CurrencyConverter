@@ -14,7 +14,7 @@ public interface CurrencyDataRepository {
 
     void setListener(CurrencyDataRepositoryImpl.OnRequestCompletionListener listener);
 
-    void removeListener();
+    void removeListener(CurrencyDataRepositoryImpl.OnRequestCompletionListener listener);
 
     void getCurrencyDataFromNetwork();
 
