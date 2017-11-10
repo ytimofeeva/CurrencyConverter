@@ -9,14 +9,19 @@ import com.juliatimofeeva.currencyconverter.presentation.ui.ConvertPresenterImpl
 
 public class PresentationLayerFactory {
 
-    public ConvertPresenter getConvertPresenter() {
-        ConvertPresenter presenter = new ConvertPresenterImpl(CurrencyApplication.getFactoryProvider()
-                .getDataLayerFactory()
-                .getCurrencyDataRepository());
-        CurrencyApplication.getFactoryProvider()
-                .getDataLayerFactory()
-                .getCurrencyDataRepository()
-                .setListener(presenter);
-        return presenter;
+    private ConvertPresenter convertPresenter;
+
+
+    public synchronized ConvertPresenter getConvertPresenter() {
+        if ( convertPresenter == null ) {
+            convertPresenter = new ConvertPresenterImpl(CurrencyApplication.getFactoryProvider()
+                    .getDataLayerFactory()
+                    .getCurrencyDataRepository());
+            CurrencyApplication.getFactoryProvider()
+                    .getDataLayerFactory()
+                    .getCurrencyDataRepository()
+                    .setListener(convertPresenter);
+        }
+        return convertPresenter;
     }
 }
