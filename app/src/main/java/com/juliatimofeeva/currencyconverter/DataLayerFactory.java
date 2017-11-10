@@ -29,7 +29,7 @@ public class DataLayerFactory {
 
     public synchronized CurrencyDataRepository getCurrencyDataRepository() {
         if (currencyDataRepository == null) {
-            currencyDataRepository = new CurrencyDataRepositoryImpl(getCurrencyDatabase(),
+            currencyDataRepository = new CurrencyDataRepositoryImpl(context, getCurrencyDatabase(),
                     getCurrencyConverter());
         }
         return currencyDataRepository;

@@ -3,9 +3,7 @@ package com.juliatimofeeva.currencyconverter;
 import android.app.Application;
 
 import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepositoryImpl;
-import com.juliatimofeeva.currencyconverter.data.CurrencyInfoModel;
-
-import java.util.List;
+import com.juliatimofeeva.currencyconverter.data.CurrencyModelState;
 
 /**
  * Created by julia on 03.11.17.
@@ -34,32 +32,34 @@ public class CurrencyApplication extends Application implements CurrencyDataRepo
     }
 
     @Override
-    public void onNetworkRequestSuccess(List<CurrencyInfoModel> data) {
-        factoryProvider.getDataLayerFactory().getCurrencyDataRepository().saveCurrencyDataToCache(data);
+    public void onNetworkRequestSuccess(CurrencyModelState state) {
+        factoryProvider.getDataLayerFactory()
+                .getCurrencyDataRepository()
+                .saveCurrencyDataToCache(state.getCurrencyData());
     }
 
     @Override
-    public void onNetworkRequestError(Throwable error) {
+    public void onNetworkRequestError(CurrencyModelState state) {
         factoryProvider.getDataLayerFactory().getCurrencyDataRepository().removeListener(this);
     }
 
     @Override
-    public void onCacheRequestSuccess(List<CurrencyInfoModel> data) {
+    public void onCacheRequestSuccess(CurrencyModelState state) {
         factoryProvider.getDataLayerFactory().getCurrencyDataRepository().removeListener(this);
     }
 
     @Override
-    public void onCacheRequestError(Throwable error) {
+    public void onCacheRequestError(CurrencyModelState state) {
         factoryProvider.getDataLayerFactory().getCurrencyDataRepository().removeListener(this);
     }
 
     @Override
-    public void onConvertProcessCompleteSuccess(double data) {
+    public void onConvertProcessCompleteSuccess(CurrencyModelState state) {
 
     }
 
     @Override
-    public void onConvertProcessCompleteError(Throwable error) {
+    public void onConvertProcessCompleteError(CurrencyModelState state) {
 
     }
 

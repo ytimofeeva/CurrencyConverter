@@ -11,4 +11,6 @@ public interface ConvertPresenter extends CurrencyDataRepositoryImpl.OnRequestCo
     void attachView(ConverterView view);
     void detachView();
     void processRequest( int positionFrom, int positionTo, String value);
+    void setCurrencyFrom (long positionFrom);
+    void setCurrencyTo (long setPositionTo);
 }

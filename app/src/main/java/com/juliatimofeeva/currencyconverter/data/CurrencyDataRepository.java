@@ -1,6 +1,7 @@
 package com.juliatimofeeva.currencyconverter.data;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
 
@@ -20,7 +21,20 @@ public interface CurrencyDataRepository {
 
     void getCurrencyDataFromCache();
 
-    void convertCurrency(@NonNull ConvertionRequest request);
+    CurrencyModelState convertCurrency(@NonNull ConvertionRequest request);
 
     void saveCurrencyDataToCache(List<CurrencyInfoModel> data);
+
+    void saveCurrencyFrom (@NonNull String charCode );
+
+    void saveCurrencyTo (@NonNull String charCode );
+
+    @Nullable
+    String getCurrencyFrom();
+
+    @Nullable
+    String getCurrencyTo();
+
+    CurrencyModelState getCurrentState();
+
 }
