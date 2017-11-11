@@ -2,6 +2,8 @@ package com.juliatimofeeva.currencyconverter.presentation.ui;
 
 import android.support.annotation.NonNull;
 
+import com.juliatimofeeva.currencyconverter.presentation.entities.ConverterUiModel;
+
 import java.util.Set;
 
 /**

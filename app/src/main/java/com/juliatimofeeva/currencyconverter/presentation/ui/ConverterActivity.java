@@ -2,6 +2,7 @@ package com.juliatimofeeva.currencyconverter.presentation.ui;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -17,15 +19,16 @@ import android.widget.Toast;
 
 import com.juliatimofeeva.currencyconverter.CurrencyApplication;
 import com.juliatimofeeva.currencyconverter.R;
+import com.juliatimofeeva.currencyconverter.presentation.entities.ConverterUiModel;
 
 import java.util.Set;
 
 import static android.view.View.GONE;
 
-public class MainActivity extends AppCompatActivity implements ConverterView,
+public class ConverterActivity extends AppCompatActivity implements ConverterView,
         View.OnClickListener {
 
-
+    private LinearLayout llScreen;
     private Spinner spFrom;
     private Spinner spTo;
     private EditText etValue;
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements ConverterView,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        llScreen = (LinearLayout) findViewById(R.id.ll_screen);
         spFrom = (Spinner) findViewById(R.id.sp_from);
         spTo = (Spinner) findViewById(R.id.sp_to);
         etValue = (EditText) findViewById(R.id.et_value);
@@ -109,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ConverterView,
         currencyNamesAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item,
                  names.toArray(namesString));
+        currencyNamesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spFrom.setAdapter(currencyNamesAdapter);
         spTo.setAdapter(currencyNamesAdapter);
         spFrom.setOnItemSelectedListener(currencyAdapterListner);
@@ -164,8 +169,9 @@ public class MainActivity extends AppCompatActivity implements ConverterView,
             if (converterUiModel.getCurrencyData() == null) {
                 bnProcess.setEnabled(false);
             }
-            Toast.makeText(getBaseContext(), converterUiModel.getErrorMessage(),
-                    Toast.LENGTH_SHORT).show();
+            Snackbar snackbar = Snackbar.make(llScreen, converterUiModel.getErrorMessage(),Snackbar.LENGTH_LONG);
+            snackbar.show();
+
         } else if (converterUiModel.getCurrencyData() != null) {
             pbLoading.setVisibility(View.INVISIBLE);
             bnProcess.setVisibility(View.VISIBLE);

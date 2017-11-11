@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ValueTextStyle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">?attr/editTextColor</item>
+    </style>
+
 </resources>

@@ -4,30 +4,28 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/ll_screen"
     >
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/top_margin"
+        android:layout_marginLeft="@dimen/container_horizontal_margin"
+        android:layout_marginRight="@dimen/container_horizontal_margin">
         <Spinner
             android:id="@+id/sp_from"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical">
-        </Spinner>
-
-        <Spinner
-            android:id="@+id/sp_to"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical">
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="@dimen/container_horizontal_margin">
         </Spinner>
 
         <EditText
             android:id="@+id/et_value"
+            style="@style/ValueTextStyle"
             android:inputType="numberDecimal"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -38,14 +36,43 @@
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/container_vertical_margin"
+        android:layout_marginLeft="@dimen/container_horizontal_margin"
+        android:layout_marginRight="@dimen/container_horizontal_margin">
+
+        <Spinner
+            android:id="@+id/sp_to"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="@dimen/container_horizontal_margin">
+        </Spinner>
+
+        <TextView
+            android:id="@+id/tv_result"
+            style="@style/ValueTextStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:textIsSelectable="true"/>
+
+    </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/container_vertical_margin">
         <Button
             android:id="@+id/bn_process"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:background="?attr/colorPrimary"
+
             android:text="@string/bn_text"/>
         <ProgressBar
             android:id="@+id/pb_loading"
@@ -53,13 +80,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:visibility="invisible"/>
-        <TextView
-            android:id="@+id/tv_result"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:textIsSelectable="true"/>
-    </LinearLayout>
+
+    </FrameLayout>
 
 
 </LinearLayout>
