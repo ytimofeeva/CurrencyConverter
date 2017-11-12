@@ -1,5 +1,6 @@
-package com.juliatimofeeva.currencyconverter;
+package com.juliatimofeeva.currencyconverter.factory;
 
+import com.juliatimofeeva.currencyconverter.CurrencyApplication;
 import com.juliatimofeeva.currencyconverter.presentation.ui.ConvertPresenter;
 import com.juliatimofeeva.currencyconverter.presentation.ui.ConvertPresenterImpl;
 
@@ -20,7 +21,11 @@ public class PresentationLayerFactory {
             CurrencyApplication.getFactoryProvider()
                     .getDataLayerFactory()
                     .getCurrencyDataRepository()
-                    .setListener(convertPresenter);
+                    .setCurrencyDataListener(convertPresenter);
+            CurrencyApplication.getFactoryProvider()
+                    .getDataLayerFactory()
+                    .getCurrencyDataRepository()
+                    .setConvertionListener(convertPresenter);
         }
         return convertPresenter;
     }

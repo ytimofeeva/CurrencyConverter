@@ -9,8 +9,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.juliatimofeeva.currencyconverter.R;
 import com.juliatimofeeva.currencyconverter.data.converter.CurrencyConverter;
-import com.juliatimofeeva.currencyconverter.data.network.NetworkRequestProcessor;
+import com.juliatimofeeva.currencyconverter.data.network.NetworkRepository;
 import com.juliatimofeeva.currencyconverter.data.network.exceptions.ResponseParseException;
 import com.juliatimofeeva.currencyconverter.data.storage.CurrencyDatabase;
 import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
@@ -36,48 +37,66 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     private final static String SHARED_PREFERENCES_NAME = "currency_prefs";
     private static final String CURRENCY_FROM_TAG = "currency_from";
     private static final String CURRENCY_TO_TAG = "currency_to";
+    private final static String READ_ERR_LOG_MSG =  "Can't read from database";
+    private final static String WRITE_ERR_LOG_MSG = "Can't write to database";
 
     private static final String TAG = CurrencyDataRepositoryImpl.class.getSimpleName();
 
-    private Set<OnRequestCompletionListener> listenerSet;
+    private Set<OnDataRequestCompletionListener> dataListenerSet;
+    private Set<OnConvertionCompletionListener> convertionListenerSet;
+
     private ExecutorService executor;
+    private NetworkRepository networkRepository;
     private CurrencyDatabase database;
     private CurrencyConverter converter;
     private CurrencyModelState modelState;
-    private List<CurrencyInfoModel> currencyData;
     private Context context;
 
+
     public CurrencyDataRepositoryImpl(Context context,
+                                      NetworkRepository networkRepository,
                                       CurrencyDatabase database,
                                       CurrencyConverter converter) {
         this.context = context;
         this.executor = Executors.newSingleThreadExecutor();
-        listenerSet = Collections.newSetFromMap(new ConcurrentHashMap<OnRequestCompletionListener, Boolean>());
+        dataListenerSet = Collections.newSetFromMap(new ConcurrentHashMap<OnDataRequestCompletionListener, Boolean>());
+        convertionListenerSet = Collections.newSetFromMap(new ConcurrentHashMap<OnConvertionCompletionListener, Boolean>());
         this.database = database;
+        this.networkRepository = networkRepository;
         this.converter = converter;
         this.modelState = CurrencyModelState.Builder.modelStateBuilder().build();
     }
 
-    public void setListener(OnRequestCompletionListener listener) {
-        listenerSet.add(listener);
+    public void setCurrencyDataListener(OnDataRequestCompletionListener listener) {
+        dataListenerSet.add(listener);
     }
 
-    public void removeListener(OnRequestCompletionListener listener) {
-        listenerSet.remove(listener);
+    public void removeCurrencyDataListener(OnDataRequestCompletionListener listener) {
+        dataListenerSet.remove(listener);
+    }
+
+    public void setConvertionListener(OnConvertionCompletionListener listener) {
+        convertionListenerSet.add(listener);
+    }
+
+    public void removeConvertionListener(OnConvertionCompletionListener listener) {
+        convertionListenerSet.remove(listener);
     }
 
 
     @Override
     public void getCurrencyDataFromNetwork() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyInfoLoading(true).build();
+                .setCurrencyInfoLoading(true)
+                .build();
         executor.submit(new NetworkRequestRunnable());
     }
 
     @Override
     public void getCurrencyDataFromCache() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyInfoLoading(true).build();
+                .setCurrencyInfoLoading(true)
+                .build();
         executor.submit(new CacheRequestRunnable());
     }
 
@@ -85,7 +104,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     public CurrencyModelState convertCurrency(@NonNull ConvertionRequest request) {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setConvertionInProgress(true)
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
@@ -95,23 +114,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
     @Override
     public void saveCurrencyDataToCache(List<CurrencyInfoModel> data) {
-        if ((data != null) && (data.size() > 0)) {
-            executor.submit(new SaveRequestRunnable(data));
-        }
-    }
-
-    public interface OnRequestCompletionListener {
-        void onNetworkRequestSuccess(CurrencyModelState modelState);
-
-        void onNetworkRequestError(CurrencyModelState modelState);
-
-        void onCacheRequestSuccess(CurrencyModelState modelState);
-
-        void onCacheRequestError(CurrencyModelState modelState);
-
-        void onConvertProcessCompleteSuccess(CurrencyModelState modelState);
-
-        void onConvertProcessCompleteError(CurrencyModelState modelState);
+        executor.submit(new SaveRequestRunnable(data));
     }
 
     private class NetworkRequestRunnable implements Runnable {
@@ -124,17 +127,18 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             List<CurrencyInfoModel> result = null;
             try {
                 url = new URL(REQUEST_URL);
-                result = NetworkRequestProcessor.getValuteListFromNetwork(url);
-            } catch (final IOException | ResponseParseException exception) {
+                result = networkRepository.getValuteListFromNetwork(url);
+            } catch (IOException | ResponseParseException exception) {
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setInErrorState(true)
                                 .setErrorMessage(exception.getMessage())
                                 .build();
-                        for(OnRequestCompletionListener listener : listenerSet) {
+                        for(OnDataRequestCompletionListener listener : dataListenerSet) {
                             listener.onNetworkRequestError(modelState);
                         }
                     }
@@ -148,13 +152,12 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    currencyData = finalList;
                     modelState = CurrencyModelState.Builder
-                            .modelStateBuilder().setCurrencyData(currencyData)
+                            .modelStateBuilder().setCurrencyData(finalList)
                             .setSelectedCurrencyFrom(getCurrencyFrom())
                             .setSelectedCurrencyTo(getCurrencyTo())
                             .build();
-                    for(OnRequestCompletionListener listener : listenerSet) {
+                    for(OnDataRequestCompletionListener listener : dataListenerSet) {
                         listener.onNetworkRequestSuccess(modelState);
                     }
 
@@ -171,7 +174,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             try {
                 data = database.getAllCurrencyItems();
             } catch (SQLiteException exception) {
-                Log.e(TAG, "Can't read from database");
+                Log.e(TAG, READ_ERR_LOG_MSG);
             }
 
             Handler handler = new Handler(Looper.getMainLooper());
@@ -180,10 +183,11 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setInErrorState(true)
-                                .setErrorMessage("empty")
+                                .setErrorMessage(context.getString(R.string.err_empty_base))
                                 .build();
-                        for(OnRequestCompletionListener listener : listenerSet) {
+                        for(OnDataRequestCompletionListener listener : dataListenerSet) {
                             listener.onCacheRequestError(modelState);
                         }
                     }
@@ -193,13 +197,12 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        currencyData = result;
                         modelState = CurrencyModelState.Builder
-                                .modelStateBuilder().setCurrencyData(currencyData)
+                                .modelStateBuilder().setCurrencyData(result)
                                 .setSelectedCurrencyFrom(getCurrencyFrom())
                                 .setSelectedCurrencyTo(getCurrencyTo())
                                 .build();
-                        for(OnRequestCompletionListener listener : listenerSet) {
+                        for(OnDataRequestCompletionListener listener : dataListenerSet) {
                             listener.onCacheRequestSuccess(modelState);
                         }
 
@@ -222,7 +225,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             try {
                 database.insertCurrencyItems(dataForSave);
             } catch (SQLiteException exception) {
-                Log.e(TAG, "Can't write to database");
+                Log.e(TAG, WRITE_ERR_LOG_MSG);
             }
         }
     }
@@ -246,14 +249,14 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                                .setCurrencyData(currencyData)
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setSelectedCurrencyFrom(getCurrencyFrom())
                                 .setSelectedCurrencyTo(getCurrencyTo())
                                 .setInErrorState(true)
-                                .setErrorMessage("Try again later")
+                                .setErrorMessage(context.getString(R.string.err_convertion))
                                 .build();
-                        for(OnRequestCompletionListener listener : listenerSet) {
-                            listener.onCacheRequestError(modelState);
+                        for(OnConvertionCompletionListener listener : convertionListenerSet) {
+                            listener.onConvertProcessCompleteError(modelState);
                         }
                     }
                 });
@@ -266,12 +269,12 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                 @Override
                 public void run() {
                     modelState = CurrencyModelState.Builder.modelStateBuilder()
-                            .setCurrencyData(currencyData)
+                            .setCurrencyData(modelState.getCurrencyData())
                             .setConvertionResult(finalResult)
                             .setSelectedCurrencyFrom(getCurrencyFrom())
                             .setSelectedCurrencyTo(getCurrencyTo())
                             .build();
-                    for(OnRequestCompletionListener listener : listenerSet) {
+                    for(OnConvertionCompletionListener listener : convertionListenerSet) {
                         listener.onConvertProcessCompleteSuccess(modelState);
                     }
 
@@ -287,7 +290,8 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         editor.putString(CURRENCY_FROM_TAG, charCode);
         editor.commit();
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
+                .setConvertionResult(modelState.getConvertionResult())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
@@ -300,7 +304,8 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         editor.putString(CURRENCY_TO_TAG, charCode);
         editor.commit();
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
+                .setConvertionResult(modelState.getConvertionResult())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
@@ -325,5 +330,22 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     @Override
     public CurrencyModelState getCurrentState() {
         return modelState;
+    }
+
+
+    public interface OnDataRequestCompletionListener {
+        void onNetworkRequestSuccess(CurrencyModelState modelState);
+
+        void onNetworkRequestError(CurrencyModelState modelState);
+
+        void onCacheRequestSuccess(CurrencyModelState modelState);
+
+        void onCacheRequestError(CurrencyModelState modelState);
+    }
+
+    public interface OnConvertionCompletionListener {
+        void onConvertProcessCompleteSuccess(CurrencyModelState modelState);
+
+        void onConvertProcessCompleteError(CurrencyModelState modelState);
     }
 }

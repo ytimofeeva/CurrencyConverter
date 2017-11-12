@@ -6,7 +6,8 @@ import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepositoryImpl;
  * Created by julia on 02.11.17.
  */
 
-public interface ConvertPresenter extends CurrencyDataRepositoryImpl.OnRequestCompletionListener {
+public interface ConvertPresenter extends CurrencyDataRepositoryImpl.OnDataRequestCompletionListener,
+        CurrencyDataRepositoryImpl.OnConvertionCompletionListener {
 
     void attachView(ConverterView view);
     void detachView();
