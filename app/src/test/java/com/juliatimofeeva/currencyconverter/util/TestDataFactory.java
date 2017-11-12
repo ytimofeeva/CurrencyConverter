@@ -1,6 +1,7 @@
-package com.juliatimofeeva.currencyconverter;
+package com.juliatimofeeva.currencyconverter.util;
 
 import com.juliatimofeeva.currencyconverter.data.CurrencyInfoModel;
+import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,15 +23,24 @@ public class TestDataFactory {
         return null;
     }
 
-    public static List<CurrencyInfoModel> getCurrencyInfoList() {
+    public static List<CurrencyInfoModel> getCurrencyInfoList(int size) {
         List<CurrencyInfoModel> list = new ArrayList<>();
-        list.add(getCurrencyInfoModel());
-        list.add(getCurrencyInfoModel());
+        for (int i = 0; i < size; i++) {
+            list.add(getCurrencyInfoModel());
+        }
         return list;
     }
 
     public static CurrencyInfoModel getCurrencyInfoModel() {
         return new CurrencyInfoModel("RUB", "Российский рубль", 1, 1);
+    }
+
+    public static CurrencyInfoModel getUSDCurrencyInfoModel() {
+        return new CurrencyInfoModel("USD", "Доллар США", 59.2808, 1);
+    }
+
+    public static CurrencyInfoModel getEURCurrencyInfoModel() {
+        return new CurrencyInfoModel("EUR", "Евро", 68.9791, 1);
     }
 
     public static String getCurrencyFromTag() {
@@ -47,5 +57,13 @@ public class TestDataFactory {
 
     public static String getCurrencyTo() {
         return "USD";
+    }
+
+    public static ConvertionRequest getConvertionRequest() {
+        return new ConvertionRequest(getCurrencyFrom(), getCurrencyTo(), 10);
+    }
+
+    public static Double getConvertionResult() {
+        return new Double(11.635993441384057);
     }
 }

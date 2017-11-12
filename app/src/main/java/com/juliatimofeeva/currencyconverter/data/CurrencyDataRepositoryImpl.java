@@ -83,13 +83,11 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         convertionListenerSet.remove(listener);
     }
 
-
     @Override
     public void getCurrencyDataFromNetwork() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setCurrencyInfoLoading(true)
                 .build();
-       // new NetworkRequestRunnable().run();
         executor.submit(new NetworkRequestRunnable());
     }
 
