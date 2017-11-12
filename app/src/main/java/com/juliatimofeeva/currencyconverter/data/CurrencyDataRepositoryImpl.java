@@ -152,7 +152,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    //currencyData = finalList;
                     modelState = CurrencyModelState.Builder
                             .modelStateBuilder().setCurrencyData(finalList)
                             .setSelectedCurrencyFrom(getCurrencyFrom())
@@ -198,7 +197,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                      //  currencyData = result;
                         modelState = CurrencyModelState.Builder
                                 .modelStateBuilder().setCurrencyData(result)
                                 .setSelectedCurrencyFrom(getCurrencyFrom())

@@ -24,7 +24,6 @@ public class ConvertPresenterImpl implements ConvertPresenter {
     private ConverterView view;
     private static final String EMPTY_VALUE_IN_REQUEST_ERROR_MSG = "Empty value in request";
     private List<CurrencyInfoModel> currencyData;
-    private ConverterUiModel converterUiModel;
 
     public ConvertPresenterImpl(CurrencyDataRepository repository) {
         this.currencyDataRepository = repository;
@@ -94,13 +93,9 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     @Override
     public void onNetworkRequestError(CurrencyModelState state) {
-        /*if (currencyData == null) {
-            currencyDataRepository.getCurrencyDataFromCache();
-        }*/
     }
 
     @Override
-    //already sorted list
     public void onCacheRequestSuccess(CurrencyModelState state) {
         currencyData = state.getCurrencyData();
         ConverterUiModel model = convertStateToUi(state);
