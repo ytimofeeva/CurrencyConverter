@@ -13,17 +13,17 @@ import java.util.List;
 
 public interface CurrencyDataRepository {
 
-    void setCurrencyDataListener(CurrencyDataRepositoryImpl.OnDataRequestCompletionListener listener);
+    void setCurrencyDataListener(CurrencyDataRepository.OnDataRequestCompletionListener listener);
 
-    void removeCurrencyDataListener(CurrencyDataRepositoryImpl.OnDataRequestCompletionListener listener);
+    void removeCurrencyDataListener(CurrencyDataRepository.OnDataRequestCompletionListener listener);
 
-    void setConvertionListener(CurrencyDataRepositoryImpl.OnConvertionCompletionListener listener);
+    void setConvertionListener(CurrencyDataRepository.OnConvertionCompletionListener listener);
 
-    void removeConvertionListener(CurrencyDataRepositoryImpl.OnConvertionCompletionListener listener);
+    void removeConvertionListener(CurrencyDataRepository.OnConvertionCompletionListener listener);
 
-    void getCurrencyDataFromNetwork();
+    CurrencyModelState getCurrencyDataFromNetwork();
 
-    void getCurrencyDataFromCache();
+    CurrencyModelState getCurrencyDataFromCache();
 
     CurrencyModelState convertCurrency(@NonNull ConvertionRequest request);
 
@@ -41,4 +41,19 @@ public interface CurrencyDataRepository {
 
     CurrencyModelState getCurrentState();
 
+    interface OnDataRequestCompletionListener {
+        void onNetworkRequestSuccess(CurrencyModelState modelState);
+
+        void onNetworkRequestError(CurrencyModelState modelState);
+
+        void onCacheRequestSuccess(CurrencyModelState modelState);
+
+        void onCacheRequestError(CurrencyModelState modelState);
+    }
+
+    interface OnConvertionCompletionListener {
+        void onConvertProcessCompleteSuccess(CurrencyModelState modelState);
+
+        void onConvertProcessCompleteError(CurrencyModelState modelState);
+    }
 }

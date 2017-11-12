@@ -2,7 +2,7 @@ package com.juliatimofeeva.currencyconverter;
 
 import android.app.Application;
 
-import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepositoryImpl;
+import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepository;
 import com.juliatimofeeva.currencyconverter.data.CurrencyModelState;
 import com.juliatimofeeva.currencyconverter.factory.FactoryProvider;
 
@@ -10,7 +10,7 @@ import com.juliatimofeeva.currencyconverter.factory.FactoryProvider;
  * Created by julia on 03.11.17.
  */
 
-public class CurrencyApplication extends Application implements CurrencyDataRepositoryImpl.OnDataRequestCompletionListener {
+public class CurrencyApplication extends Application implements CurrencyDataRepository.OnDataRequestCompletionListener {
 
     private static FactoryProvider factoryProvider;
 

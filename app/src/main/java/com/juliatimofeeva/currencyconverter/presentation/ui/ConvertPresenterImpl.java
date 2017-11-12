@@ -34,7 +34,7 @@ public class ConvertPresenterImpl implements ConvertPresenter {
         CurrencyModelState repositoryModel = currencyDataRepository.getCurrentState();
         if (currencyData == null) {
             if (repositoryModel.getCurrencyData() == null) {
-                currencyDataRepository.getCurrencyDataFromCache();
+                repositoryModel = currencyDataRepository.getCurrencyDataFromCache();
             } else {
                 currencyData = repositoryModel.getCurrencyData();
             }

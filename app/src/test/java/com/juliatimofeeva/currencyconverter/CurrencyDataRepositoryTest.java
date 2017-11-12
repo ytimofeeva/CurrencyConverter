@@ -65,39 +65,9 @@ public class CurrencyDataRepositoryTest {
 
     private Semaphore semaphore;
 
-    private CurrencyDataRepositoryImpl.OnDataRequestCompletionListener dataRequestCompletionListener = Mockito.spy( new CurrencyDataRepositoryImpl.OnDataRequestCompletionListener() {
-        @Override
-        public void onNetworkRequestSuccess(CurrencyModelState modelState) {
-            semaphore.release();
-        }
+    private CurrencyDataRepository.OnDataRequestCompletionListener dataRequestCompletionListener;
 
-        @Override
-        public void onNetworkRequestError(CurrencyModelState modelState) {
-            semaphore.release();
-        }
-
-        @Override
-        public void onCacheRequestSuccess(CurrencyModelState modelState) {
-            semaphore.release();
-        }
-
-        @Override
-        public void onCacheRequestError(CurrencyModelState modelState) {
-            semaphore.release();
-        }
-    });
-
-    private CurrencyDataRepositoryImpl.OnConvertionCompletionListener convertionListener = Mockito.spy(new CurrencyDataRepositoryImpl.OnConvertionCompletionListener() {
-        @Override
-        public void onConvertProcessCompleteSuccess(CurrencyModelState modelState) {
-            semaphore.release();
-        }
-
-        @Override
-        public void onConvertProcessCompleteError(CurrencyModelState modelState) {
-            semaphore.release();
-        }
-    });
+    private CurrencyDataRepositoryImpl.OnConvertionCompletionListener convertionListener;
 
     @Before
     public void beforeTest() throws Exception {
