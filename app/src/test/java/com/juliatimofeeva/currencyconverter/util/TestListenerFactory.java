@@ -1,6 +1,6 @@
 package com.juliatimofeeva.currencyconverter.util;
 
-import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepositoryImpl;
+import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepository;
 import com.juliatimofeeva.currencyconverter.data.CurrencyModelState;
 
 import java.util.concurrent.Semaphore;
@@ -11,16 +11,16 @@ import java.util.concurrent.Semaphore;
 
 public class TestListenerFactory {
 
-    public static CurrencyDataRepositoryImpl.OnDataRequestCompletionListener getTestRequestCompletionListener(Semaphore semaphore) {
+    public static CurrencyDataRepository.OnDataRequestCompletionListener getTestRequestCompletionListener(Semaphore semaphore) {
         return new TestRequestCompletionListener(semaphore);
     }
 
-    public static CurrencyDataRepositoryImpl.OnConvertionCompletionListener getTestConvertionListener(Semaphore semaphore) {
+    public static CurrencyDataRepository.OnConvertionCompletionListener getTestConvertionListener(Semaphore semaphore) {
         return new TestConvertionListener(semaphore);
     }
 
 
-    public static class TestRequestCompletionListener implements CurrencyDataRepositoryImpl.OnDataRequestCompletionListener {
+    public static class TestRequestCompletionListener implements CurrencyDataRepository.OnDataRequestCompletionListener {
 
         private Semaphore semaphore;
 
@@ -48,7 +48,7 @@ public class TestListenerFactory {
         }
     }
 
-    public static class TestConvertionListener implements CurrencyDataRepositoryImpl.OnConvertionCompletionListener {
+    public static class TestConvertionListener implements CurrencyDataRepository.OnConvertionCompletionListener {
         private Semaphore semaphore;
 
         public TestConvertionListener(Semaphore sem) {

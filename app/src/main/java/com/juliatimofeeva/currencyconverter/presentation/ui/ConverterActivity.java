@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.juliatimofeeva.currencyconverter.CurrencyApplication;
 import com.juliatimofeeva.currencyconverter.R;
@@ -140,18 +139,18 @@ public class ConverterActivity extends AppCompatActivity implements ConverterVie
     public void displayUiModel(@NonNull ConverterUiModel converterUiModel) {
         currentUiModel = converterUiModel;
         if (converterUiModel.isCurrencyDataInProgress()) {
-            bnProcess.setVisibility(View.INVISIBLE);
+            bnProcess.setVisibility(GONE);
             pbLoading.setVisibility(View.VISIBLE);
-            Toast.makeText(this, "currency data in progress", Toast.LENGTH_SHORT).show();
+
         } else if (converterUiModel.isConvertionInProgress()) {
             bnProcess.setVisibility(GONE);
             pbLoading.setVisibility(View.VISIBLE);
-            Toast.makeText(this, "convertion in progress", Toast.LENGTH_SHORT).show();
+
         } else if (converterUiModel.getConvertionResult() != null) {
             pbLoading.setVisibility(View.GONE);
             bnProcess.setVisibility(View.VISIBLE);
             tvResult.setText(converterUiModel.getConvertionResult());
-            Toast.makeText(this, "convertion result", Toast.LENGTH_SHORT).show();
+
         } else if (converterUiModel.getErrorMessage() != null) {
             pbLoading.setVisibility(View.GONE);
             bnProcess.setVisibility(View.VISIBLE);
@@ -162,10 +161,10 @@ public class ConverterActivity extends AppCompatActivity implements ConverterVie
             snackbar.show();
 
         } else if (converterUiModel.getCurrencyData() != null) {
-            pbLoading.setVisibility(View.INVISIBLE);
+            pbLoading.setVisibility(View.GONE);
             bnProcess.setVisibility(View.VISIBLE);
             bnProcess.setEnabled(true);
-            Toast.makeText(this, "currency data success", Toast.LENGTH_SHORT).show();
+
         }
 
         if ((converterUiModel.getCurrencyData() != null)

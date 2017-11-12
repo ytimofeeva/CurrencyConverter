@@ -84,19 +84,21 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     }
 
     @Override
-    public void getCurrencyDataFromNetwork() {
+    public CurrencyModelState getCurrencyDataFromNetwork() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setCurrencyInfoLoading(true)
                 .build();
         executor.submit(new NetworkRequestRunnable());
+        return modelState;
     }
 
     @Override
-    public void getCurrencyDataFromCache() {
+    public CurrencyModelState getCurrencyDataFromCache() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setCurrencyInfoLoading(true)
                 .build();
         executor.submit(new CacheRequestRunnable());
+        return modelState;
     }
 
     @Override
@@ -122,6 +124,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
 
         @Override
         public void run() {
+
             URL url = null;
             List<CurrencyInfoModel> result = null;
             try {
@@ -248,7 +251,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         public void run() {
             double result = 0;
             try {
-                Thread.sleep(3000);
                 result = converter.convert(request.getCurrencyCodeFrom(), request.getCurrencyCodeTo(), request.getRequestValue());
             } catch (SQLiteException|NoSuchElementException exception) {
                 Handler handler = new Handler(Looper.getMainLooper());
@@ -267,8 +269,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                         }
                     }
                 });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
             final double finalResult = result;
             Handler handler = new Handler(Looper.getMainLooper());
@@ -340,19 +340,4 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     }
 
 
-    public interface OnDataRequestCompletionListener {
-        void onNetworkRequestSuccess(CurrencyModelState modelState);
-
-        void onNetworkRequestError(CurrencyModelState modelState);
-
-        void onCacheRequestSuccess(CurrencyModelState modelState);
-
-        void onCacheRequestError(CurrencyModelState modelState);
-    }
-
-    public interface OnConvertionCompletionListener {
-        void onConvertProcessCompleteSuccess(CurrencyModelState modelState);
-
-        void onConvertProcessCompleteError(CurrencyModelState modelState);
-    }
 }
