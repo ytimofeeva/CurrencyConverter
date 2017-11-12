@@ -86,14 +86,17 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     @Override
     public void onNetworkRequestSuccess(CurrencyModelState state) {
-        currencyData = state.getCurrencyData();
+        if (currencyData == null) {
+            currencyData = state.getCurrencyData();
+            view.displayUiModel(convertStateToUi(state));
+        }
     }
 
     @Override
     public void onNetworkRequestError(CurrencyModelState state) {
-        if (currencyData == null) {
+        /*if (currencyData == null) {
             currencyDataRepository.getCurrencyDataFromCache();
-        }
+        }*/
     }
 
     @Override
@@ -109,7 +112,7 @@ public class ConvertPresenterImpl implements ConvertPresenter {
     @Override
     public void onCacheRequestError(CurrencyModelState state) {
         ConverterUiModel model = convertStateToUi(state);
-        if (view != null) {
+        if ((currencyData == null) && (view != null)) {
             view.displayUiModel(model);
         }
     }

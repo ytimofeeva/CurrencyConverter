@@ -50,7 +50,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     private CurrencyDatabase database;
     private CurrencyConverter converter;
     private CurrencyModelState modelState;
-    private List<CurrencyInfoModel> currencyData;
     private Context context;
 
 
@@ -105,7 +104,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
     public CurrencyModelState convertCurrency(@NonNull ConvertionRequest request) {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setConvertionInProgress(true)
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
@@ -135,6 +134,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setInErrorState(true)
                                 .setErrorMessage(exception.getMessage())
                                 .build();
@@ -152,9 +152,9 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    currencyData = finalList;
+                    //currencyData = finalList;
                     modelState = CurrencyModelState.Builder
-                            .modelStateBuilder().setCurrencyData(currencyData)
+                            .modelStateBuilder().setCurrencyData(finalList)
                             .setSelectedCurrencyFrom(getCurrencyFrom())
                             .setSelectedCurrencyTo(getCurrencyTo())
                             .build();
@@ -184,6 +184,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setInErrorState(true)
                                 .setErrorMessage(context.getString(R.string.err_empty_base))
                                 .build();
@@ -197,9 +198,9 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        currencyData = result;
+                      //  currencyData = result;
                         modelState = CurrencyModelState.Builder
-                                .modelStateBuilder().setCurrencyData(currencyData)
+                                .modelStateBuilder().setCurrencyData(result)
                                 .setSelectedCurrencyFrom(getCurrencyFrom())
                                 .setSelectedCurrencyTo(getCurrencyTo())
                                 .build();
@@ -250,7 +251,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                     @Override
                     public void run() {
                         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                                .setCurrencyData(currencyData)
+                                .setCurrencyData(modelState.getCurrencyData())
                                 .setSelectedCurrencyFrom(getCurrencyFrom())
                                 .setSelectedCurrencyTo(getCurrencyTo())
                                 .setInErrorState(true)
@@ -270,7 +271,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                 @Override
                 public void run() {
                     modelState = CurrencyModelState.Builder.modelStateBuilder()
-                            .setCurrencyData(currencyData)
+                            .setCurrencyData(modelState.getCurrencyData())
                             .setConvertionResult(finalResult)
                             .setSelectedCurrencyFrom(getCurrencyFrom())
                             .setSelectedCurrencyTo(getCurrencyTo())
@@ -291,7 +292,8 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         editor.putString(CURRENCY_FROM_TAG, charCode);
         editor.commit();
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
+                .setConvertionResult(modelState.getConvertionResult())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
@@ -304,7 +306,8 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         editor.putString(CURRENCY_TO_TAG, charCode);
         editor.commit();
         modelState = CurrencyModelState.Builder.modelStateBuilder()
-                .setCurrencyData(currencyData)
+                .setCurrencyData(modelState.getCurrencyData())
+                .setConvertionResult(modelState.getConvertionResult())
                 .setSelectedCurrencyFrom(getCurrencyFrom())
                 .setSelectedCurrencyTo(getCurrencyTo())
                 .build();
