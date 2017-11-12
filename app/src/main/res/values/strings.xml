@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">CurrencyConverter</string>
     <string name="bn_text">PROCESS</string>
+
+    <string name="err_empty_base">There is no information about currency.\nCheck your internet connection and restart app.</string>
+    <string name="err_convertion">Cannot access currency data. Try again later.</string>
 </resources>

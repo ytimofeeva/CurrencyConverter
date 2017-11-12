@@ -1,7 +1,6 @@
 package com.juliatimofeeva.currencyconverter.data.network;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.juliatimofeeva.currencyconverter.data.CurrencyInfoModel;
 import com.juliatimofeeva.currencyconverter.data.network.entities.ValCurs;
@@ -20,13 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by julia on 03.11.17.
+ * Created by julia on 11.11.17.
  */
 
-public class NetworkRequestProcessor {
+public class NetworkRepositoryImpl implements NetworkRepository {
 
-    @Nullable
-    public static List<CurrencyInfoModel> getValuteListFromNetwork(URL url) throws IOException, ResponseParseException {
+    public List<CurrencyInfoModel> getValuteListFromNetwork(URL url) throws IOException, ResponseParseException {
         List<CurrencyInfoModel> result = null;
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {

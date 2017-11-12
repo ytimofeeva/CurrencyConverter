@@ -107,8 +107,7 @@ public class ConverterActivity extends AppCompatActivity implements ConverterVie
         presenter.detachView();
     }
 
-    @Override
-    public void showCurrencyNames(@NonNull Set<String> names) {
+    private void showCurrencyNames(@NonNull Set<String> names) {
         String[] namesString = new String[names.size()];
         currencyNamesAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item,
@@ -118,16 +117,6 @@ public class ConverterActivity extends AppCompatActivity implements ConverterVie
         spTo.setAdapter(currencyNamesAdapter);
         spFrom.setOnItemSelectedListener(currencyAdapterListner);
         spTo.setOnItemSelectedListener(currencyAdapterListner);
-    }
-
-    @Override
-    public void showError(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void showResult(String result) {
-        tvResult.setText(result);
     }
 
     @Override

@@ -27,15 +27,18 @@ public class ConvertPresenterImpl implements ConvertPresenter {
     private ConverterUiModel converterUiModel;
 
     public ConvertPresenterImpl(CurrencyDataRepository repository) {
-            this.currencyDataRepository = repository;
+        this.currencyDataRepository = repository;
     }
 
     public void attachView(ConverterView view) {
         this.view = view;
         CurrencyModelState repositoryModel = currencyDataRepository.getCurrentState();
         if (currencyData == null) {
-            //view.showCurrencyNames(getSortedNamesFromModelList(currencyData));
-            currencyDataRepository.getCurrencyDataFromCache();
+            if (repositoryModel.getCurrencyData() == null) {
+                currencyDataRepository.getCurrencyDataFromCache();
+            } else {
+                currencyData = repositoryModel.getCurrencyData();
+            }
         }
         ConverterUiModel uiModel = convertStateToUi(repositoryModel);
         view.displayUiModel(uiModel);
@@ -47,25 +50,33 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     @Override
     public void processRequest(int positionFrom, int positionTo, String value) {
+        ConverterUiModel uiModel = null;
         if (TextUtils.isEmpty(value)) {
             if (view != null) {
-                view.showError(EMPTY_VALUE_IN_REQUEST_ERROR_MSG);
+                uiModel = ConverterUiModel.Builder.modelBuilder()
+                        .setCurrencyData(getSortedNamesFromModelList(currencyData))
+                        .setPositionFrom(positionFrom)
+                        .setPositionTo(positionTo)
+                        .setErrorMessage(EMPTY_VALUE_IN_REQUEST_ERROR_MSG)
+                        .build();
+
             }
         } else {
             String charCodeFrom = currencyData.get(positionFrom).getCharCode();
             String charCodeTo = currencyData.get(positionTo).getCharCode();
             ConvertionRequest request = new ConvertionRequest(charCodeFrom, charCodeTo, Double.parseDouble(value));
             CurrencyModelState modelState = currencyDataRepository.convertCurrency(request);
-            ConverterUiModel uiModel = convertStateToUi(modelState);
-            if (view != null) {
-                view.displayUiModel(uiModel);
-            }
+            uiModel = convertStateToUi(modelState);
+
+        }
+        if (view != null) {
+            view.displayUiModel(uiModel);
         }
     }
 
     @Override
     public void setCurrencyFrom(long positionFrom) {
-        currencyDataRepository.saveCurrencyFrom(currencyData.get((int)positionFrom).getCharCode());
+        currencyDataRepository.saveCurrencyFrom(currencyData.get((int) positionFrom).getCharCode());
     }
 
     @Override
@@ -76,16 +87,13 @@ public class ConvertPresenterImpl implements ConvertPresenter {
     @Override
     public void onNetworkRequestSuccess(CurrencyModelState state) {
         currencyData = state.getCurrencyData();
-        ConverterUiModel model = convertStateToUi(state);
-        if (view != null) {
-            //view.showResult(String.valueOf(data));
-         //   view.displayUiModel(model);
-        }
     }
 
     @Override
     public void onNetworkRequestError(CurrencyModelState state) {
-        currencyDataRepository.getCurrencyDataFromCache();
+        if (currencyData == null) {
+            currencyDataRepository.getCurrencyDataFromCache();
+        }
     }
 
     @Override
@@ -94,7 +102,6 @@ public class ConvertPresenterImpl implements ConvertPresenter {
         currencyData = state.getCurrencyData();
         ConverterUiModel model = convertStateToUi(state);
         if (view != null) {
-            //view.showResult(String.valueOf(data));
             view.displayUiModel(model);
         }
     }
@@ -111,7 +118,6 @@ public class ConvertPresenterImpl implements ConvertPresenter {
     public void onConvertProcessCompleteSuccess(CurrencyModelState state) {
         ConverterUiModel model = convertStateToUi(state);
         if (view != null) {
-            //view.showResult(String.valueOf(data));
             view.displayUiModel(model);
         }
     }
@@ -126,7 +132,7 @@ public class ConvertPresenterImpl implements ConvertPresenter {
 
     private Set<String> getSortedNamesFromModelList(List<CurrencyInfoModel> data) {
         Set<String> namesList = new TreeSet<>();
-        for(CurrencyInfoModel model : data) {
+        for (CurrencyInfoModel model : data) {
             namesList.add(model.getName());
         }
         return namesList;
@@ -151,8 +157,7 @@ public class ConvertPresenterImpl implements ConvertPresenter {
             model = ConverterUiModel.Builder.modelBuilder()
                     .setCurrencyDataInProgress(true)
                     .build();
-        }
-        else {
+        } else {
             ConverterUiModel.Builder modelBuilder = ConverterUiModel.Builder.modelBuilder()
                     .setCurrencyData(getSortedNamesFromModelList(state.getCurrencyData()))
                     .setPositionFrom(getCurrencyPosition(state.getSelectedCurrencyFrom(), state.getCurrencyData()))

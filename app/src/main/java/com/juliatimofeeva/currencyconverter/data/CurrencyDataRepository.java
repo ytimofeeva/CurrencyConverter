@@ -13,9 +13,13 @@ import java.util.List;
 
 public interface CurrencyDataRepository {
 
-    void setListener(CurrencyDataRepositoryImpl.OnRequestCompletionListener listener);
+    void setCurrencyDataListener(CurrencyDataRepositoryImpl.OnDataRequestCompletionListener listener);
 
-    void removeListener(CurrencyDataRepositoryImpl.OnRequestCompletionListener listener);
+    void removeCurrencyDataListener(CurrencyDataRepositoryImpl.OnDataRequestCompletionListener listener);
+
+    void setConvertionListener(CurrencyDataRepositoryImpl.OnConvertionCompletionListener listener);
+
+    void removeConvertionListener(CurrencyDataRepositoryImpl.OnConvertionCompletionListener listener);
 
     void getCurrencyDataFromNetwork();
 
@@ -23,7 +27,7 @@ public interface CurrencyDataRepository {
 
     CurrencyModelState convertCurrency(@NonNull ConvertionRequest request);
 
-    void saveCurrencyDataToCache(List<CurrencyInfoModel> data);
+    void saveCurrencyDataToCache(@NonNull List<CurrencyInfoModel> data);
 
     void saveCurrencyFrom (@NonNull String charCode );
 

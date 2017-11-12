@@ -1,4 +1,4 @@
-package com.juliatimofeeva.currencyconverter;
+package com.juliatimofeeva.currencyconverter.factory;
 
 import android.content.Context;
 
