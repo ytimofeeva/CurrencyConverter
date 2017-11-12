@@ -89,6 +89,7 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
                 .setCurrencyInfoLoading(true)
                 .build();
+       // new NetworkRequestRunnable().run();
         executor.submit(new NetworkRequestRunnable());
     }
 
@@ -143,6 +144,14 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                         }
                     }
                 });
+                modelState = CurrencyModelState.Builder.modelStateBuilder()
+                        .setCurrencyData(modelState.getCurrencyData())
+                        .setInErrorState(true)
+                        .setErrorMessage(exception.getMessage())
+                        .build();
+                for(OnDataRequestCompletionListener listener : dataListenerSet) {
+                    listener.onNetworkRequestError(modelState);
+                }
                 return;
             }
 

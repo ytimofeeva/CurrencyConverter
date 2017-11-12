@@ -19,6 +19,4 @@ public interface NetworkRepository {
     @Nullable
     @WorkerThread
     List<CurrencyInfoModel> getValuteListFromNetwork(URL url) throws IOException, ResponseParseException;
-
-
 }
