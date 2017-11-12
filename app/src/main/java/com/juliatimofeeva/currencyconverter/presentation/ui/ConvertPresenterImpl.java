@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.juliatimofeeva.currencyconverter.data.CurrencyDataRepository;
 import com.juliatimofeeva.currencyconverter.data.CurrencyInfoModel;
 import com.juliatimofeeva.currencyconverter.data.CurrencyModelState;
+import com.juliatimofeeva.currencyconverter.presentation.entities.ConverterUiModel;
 import com.juliatimofeeva.currencyconverter.presentation.entities.ConvertionRequest;
 
 import java.util.List;
@@ -157,7 +158,7 @@ public class ConvertPresenterImpl implements ConvertPresenter {
                     .setPositionFrom(getCurrencyPosition(state.getSelectedCurrencyFrom(), state.getCurrencyData()))
                     .setPositionTo(getCurrencyPosition(state.getSelectedCurrencyTo(), state.getCurrencyData()));
             if (state.getConvertionResult() >= 0) {
-                modelBuilder.setConvertionResult(String.valueOf(state.getConvertionResult()));
+                modelBuilder.setConvertionResult(String.format("%.2f", state.getConvertionResult()));
             }
             model = modelBuilder.build();
         }

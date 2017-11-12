@@ -1,4 +1,4 @@
-package com.juliatimofeeva.currencyconverter.presentation.ui;
+package com.juliatimofeeva.currencyconverter.presentation.entities;
 
 import java.util.Set;
 
