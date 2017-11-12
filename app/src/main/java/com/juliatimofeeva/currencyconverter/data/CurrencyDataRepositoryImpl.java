@@ -83,7 +83,6 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
         convertionListenerSet.remove(listener);
     }
 
-
     @Override
     public void getCurrencyDataFromNetwork() {
         modelState = CurrencyModelState.Builder.modelStateBuilder()
@@ -143,6 +142,14 @@ public class CurrencyDataRepositoryImpl implements CurrencyDataRepository {
                         }
                     }
                 });
+                modelState = CurrencyModelState.Builder.modelStateBuilder()
+                        .setCurrencyData(modelState.getCurrencyData())
+                        .setInErrorState(true)
+                        .setErrorMessage(exception.getMessage())
+                        .build();
+                for(OnDataRequestCompletionListener listener : dataListenerSet) {
+                    listener.onNetworkRequestError(modelState);
+                }
                 return;
             }
 
